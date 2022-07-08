@@ -1,11 +1,10 @@
-const User = require("../models/User");
 const router = require("express").Router();
-const bcrypt = require("bcrypt");
 const {
 	getUser,
 	updateUser,
 	deleteUser,
 	followUser,
+	unfollowUser,
 } = require("../controllers/user");
 
 router.get("/", (req, res) => {
@@ -21,7 +20,10 @@ router.delete("/:id", deleteUser);
 //get user
 router.get("/:id", getUser);
 
-//follow a user
+//follow user
 router.put("/:id/follow", followUser);
+
+//unfollow user
+router.put("/:id/unfollow", unfollowUser);
 
 module.exports = router;

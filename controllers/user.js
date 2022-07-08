@@ -74,6 +74,26 @@ exports.followUser = async (req, res) => {
 			res.status(500).json(error);
 		}
 	} else {
-		res.status(403).json("You cant follow yourself!");
+		res.status(403).json("You cannot follow yourself!");
+	}
+};
+
+exports.unfollowUser = async (req, res) => {
+	if (req.body.userId !== req.params.id) {
+		try {
+			const user = await User.findById(req.params.id); // user being unfollowed
+			const currentUser = await User.findById(req.body.userId); // user who wants to unfollow
+
+			if (user.followers.includes(req.body.userId)) {
+				await user.updateOne({ $push: { followers: req.body.userId } });
+				await currentUser.updateOne({ $push: { following: req.params.id } });
+
+				res.status(200).json("User has been followed");
+			} else {
+				res.status(403).json("You do not follow this user");
+			}
+		} catch (error) {}
+	} else {
+		res.status(403).json("You cannot unfollow yourself!");
 	}
 };
