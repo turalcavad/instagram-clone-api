@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const helmet = require("helmet");
 const morgan = require("morgan");
+var bodyParser = require("body-parser");
+var cookieParser = require("cookie-parser");
 
 const userRoute = require("./routes/users");
 const authRoute = require("./routes/auth");
@@ -18,6 +20,13 @@ mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true }, () => {
 app.use(express.json());
 app.use(helmet());
 app.use(morgan("common"));
+app.use(bodyParser.json());
+app.use(cookieParser());
+app.use(function (err, req, res, next) {
+	if (err.name === "UnauthorizedError") {
+		res.status(401).json({ error: "Unauthorized!" });
+	}
+});
 
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
