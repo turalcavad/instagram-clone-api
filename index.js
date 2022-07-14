@@ -7,8 +7,16 @@ const morgan = require("morgan");
 var bodyParser = require("body-parser");
 var cookieParser = require("cookie-parser");
 
+const cors = require("cors");
+const corsOptions = {
+	origin: "*",
+	credentials: true, //access-control-allow-credentials:true
+	optionSuccessStatus: 200,
+};
+
 const userRoute = require("./routes/users");
 const authRoute = require("./routes/auth");
+const postsRoute = require("./routes/posts");
 
 dotenv.config();
 
@@ -27,13 +35,11 @@ app.use(function (err, req, res, next) {
 		res.status(401).json({ error: "Unauthorized!" });
 	}
 });
+app.use(cors(corsOptions));
 
-app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
-
-app.get("/", (req, res) => {
-	res.send("Hello World");
-});
+app.use("/api/users", userRoute);
+app.use("/api/posts", postsRoute);
 
 app.listen(5000, () => {
 	console.log("Test server is running on port 5000");
