@@ -1,6 +1,23 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 
+exports.userById = async (req, res, next, id) => {
+	console.log("UserByID");
+	User.findById(id)
+		.populate("following", "_id name")
+		.populate("followers", "_id name")
+
+		.exec((err, user) => {
+			if (err || !user) {
+				return res.status(400).json({
+					error: "User not found",
+				});
+			}
+			req.profile = user;
+			next();
+		});
+};
+
 //get user
 exports.getUser = async (req, res) => {
 	try {
