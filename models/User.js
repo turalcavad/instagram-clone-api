@@ -15,6 +15,11 @@ const UserSchema = new mongoose.Schema(
 			max: 20,
 			unique: true,
 		},
+		fullName: {
+			type: String,
+			required: true,
+			max: 20,
+		},
 		password: {
 			type: String,
 			required: true,
@@ -24,14 +29,8 @@ const UserSchema = new mongoose.Schema(
 			type: String,
 			default: "",
 		},
-		followers: {
-			type: Array,
-			default: [],
-		},
-		following: {
-			type: Array,
-			default: [],
-		},
+		following: [{ type: mongoose.Types.ObjectId, ref: "User" }],
+		followers: [{ type: mongoose.Types.ObjectId, ref: "User" }],
 		biography: {
 			type: String,
 			default: "",
