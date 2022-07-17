@@ -6,12 +6,13 @@ const PostSchema = mongoose.Schema({
 		required: true,
 		max: 300,
 	},
-	photo: {
-		type: Buffer,
-		contentType: String,
+	imagePath: {
+		type: String,
+		required: true,
+		max: 300,
 	},
 	postedBy: {
-		type: mongoose.Schema.ObjectId,
+		type: mongoose.Types.ObjectId,
 		ref: "User",
 	},
 	created: {
@@ -19,12 +20,12 @@ const PostSchema = mongoose.Schema({
 		default: Date.now,
 	},
 	updated: Date,
-	likes: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
+	likes: [{ type: mongoose.Types.ObjectId, ref: "User" }],
 	comments: [
 		{
-			text: String,
+			text: { type: String, required: true },
 			created: { type: Date, default: Date.now },
-			postedBy: { type: mongoose.Schema.ObjectId, ref: "User" },
+			postedBy: { type: mongoose.Types.ObjectId, ref: "User" },
 		},
 	],
 });
