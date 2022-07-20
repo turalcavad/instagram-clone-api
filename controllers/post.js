@@ -2,9 +2,8 @@ const Post = require("../models/Post");
 const User = require("../models/User");
 
 exports.createPost = async (req, res) => {
-	console.log(req.body);
-	const newPost = new Post(req.body);
 	try {
+		const newPost = new Post(req.body);
 		newPost.postedBy = req.profile;
 		const savedPost = await newPost.save();
 
@@ -15,14 +14,18 @@ exports.createPost = async (req, res) => {
 };
 
 exports.getPost = async (req, res) => {
-	Post.findById(req.params.postId)
-		.populate("comments.postedBy", "_id username email")
-		.populate("postedBy", "_id username email")
-		.exec((err, result) => {
-			if (err) return res.status(403).json("Post does not exist!");
-
-			res.status(200).json(result);
-		});
+	try {
+		Post.findById(req.params.postId)
+			.populate("comments.postedBy", "_id username email")
+			.populate("postedBy", "_id username email")
+			.populate("likes.likedBy", "_id username")
+			.exec((err, result) => {
+				if (err) return res.status(403).json("Post does not exist!");
+				res.status(200).json(result);
+			});
+	} catch (error) {
+		res.status(403).json(error);
+	}
 };
 
 exports.feed = async (req, res) => {
@@ -36,7 +39,8 @@ exports.feed = async (req, res) => {
 
 		const posts = await Post.find({ postedBy: { $in: following } })
 			.sort({ created: "descending" })
-			.populate("postedBy", "_id username");
+			.populate("postedBy", "_id username")
+			.populate("likes.likedBy", "_id username");
 
 		res.status(200).json(posts);
 	} catch {}
@@ -44,27 +48,49 @@ exports.feed = async (req, res) => {
 
 //like post
 exports.likePost = async (req, res) => {
-	const post = await Post.findById(req.params.postId);
+	try {
+		const post = await Post.findById(req.params.postId);
+		const user = await User.findById(req.body.userId); // user who liked the post
 
-	if (!post.likes.includes(req.body.userId)) {
-		await post.updateOne({ $push: { likes: req.body.userId } }, { new: true });
+		const likedBy = {
+			likedBy: user,
+		};
+
+		const alreadyLiked = post.likes.some((like) => {
+			return like.likedBy._id.toString() === user._id.toString();
+		});
+
+		if (alreadyLiked)
+			return res.status(403).json("You have already liked this post");
+
+		await post.updateOne({ $push: { likes: likedBy } }, { new: true });
 		post.save();
 		res.status(200).json(post);
-	} else {
-		res.status(403).json("You already liked this post");
+	} catch (error) {
+		res.status(403).json(error);
 	}
 };
 
 //unlike post
 exports.unlikePost = async (req, res) => {
-	const post = await Post.findById(req.params.postId);
+	try {
+		const post = await Post.findById(req.params.postId);
+		const user = await User.findById(req.body.userId);
 
-	if (post.likes.includes(req.body.userId)) {
-		await post.updateOne({ $pull: { likes: req.body.userId } }, { new: true });
+		const likedBy = {
+			likedBy: user,
+		};
+
+		const liked = post.likes.some((like) => {
+			return like.likedBy._id.toString() === user._id.toString();
+		});
+		if (!liked) return res.status(403).json("You have not liked this post");
+
+		await post.updateOne({ $pull: { likes: likedBy } }, { new: true });
 		post.save();
 		res.status(200).json(post);
-	} else {
-		res.status(403).json("You have not liked this post");
+	} catch (error) {
+		res.status(403).json(error);
 	}
 };
 
