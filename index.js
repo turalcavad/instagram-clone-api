@@ -17,6 +17,8 @@ const corsOptions = {
 const userRoute = require("./routes/users");
 const authRoute = require("./routes/auth");
 const postsRoute = require("./routes/posts");
+const conversationRoute = require("./routes/conversations");
+const messageRoute = require("./routes/messages");
 
 dotenv.config();
 
@@ -40,6 +42,8 @@ app.use(cors(corsOptions));
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/posts", postsRoute);
+app.use("/api/conversations", conversationRoute);
+app.use("/api/messages", messageRoute);
 
 app.listen(5000, () => {
 	console.log("Test server is running on port 5000");
